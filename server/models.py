@@ -26,10 +26,33 @@ class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     hire_date = db.Column(db.Date)
-    meetings = db.relationship('Meeting', secondary=employee_meetings, back_populates='employees')
+    #many-to-many relationship with meetings through association table
+    meetings = db.relationship('Meeting',secondary=employee_meetings, back_populates='employees')
+    #many-to-many relationship with projects through association table
+    assignments = db.relationship('Assignment', back_populates='employee', cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Employee {self.id}, {self.name}, {self.hire_date}>'
+
+
+#Association Model to store many-to-many relationship between employee and project
+class Assignment(db.Model):
+    __tablename__ = "assignments"
+
+    id = db.Column(db.Integer, primary_key=True)
+    role = db.Column(db.String)
+    start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
+    #foreign key to store the employee id
+    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id'))
+    #foreign key to store the project id
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
+
+    employee = db.relationship("Employee", back_populates="assignments")
+    project = db.relationship("Project", back_populates="assignments")
+
+    def __repr__(self):
+        return f'<Assignment {self.id}, {self.role}, {self.start_date}, {self.end_date}, {self.employee_id}, {self.project_id}>'
 
 
 class Meeting(db.Model):
@@ -51,6 +74,9 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     budget = db.Column(db.Integer)
+    
+    #relationship mapping the project to the related assignments
+    assignments = db.relationship('Assignment', back_populates='project', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Review {self.id}, {self.title}, {self.budget}>'
