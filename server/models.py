@@ -30,7 +30,9 @@ class Employee(db.Model):
     meetings = db.relationship('Meeting',secondary=employee_meetings, back_populates='employees')
     #many-to-many relationship with projects through association table
     assignments = db.relationship('Assignment', back_populates='employee', cascade='all, delete-orphan')
-    
+    #association proxt to get projects of this employee through assignments
+    projects = association_proxy('assignments', 'project',
+     creator=lambda project: Assignment(project=project))
     def __repr__(self):
         return f'<Employee {self.id}, {self.name}, {self.hire_date}>'
 
@@ -77,6 +79,9 @@ class Project(db.Model):
     
     #relationship mapping the project to the related assignments
     assignments = db.relationship('Assignment', back_populates='project', cascade='all, delete-orphan')
-
+    
+    #association proxy to get employees working on this project through assignments
+    employees = association_proxy('assignments', 'employee',
+     creator=lambda employee: Assignment(employee=employee))
     def __repr__(self):
         return f'<Review {self.id}, {self.title}, {self.budget}>'
